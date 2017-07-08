@@ -1,0 +1,6 @@
+version: '2'
+services:
+  extract-from-password-field:
+    build: .
+    ports:
+      - "8000:8000"

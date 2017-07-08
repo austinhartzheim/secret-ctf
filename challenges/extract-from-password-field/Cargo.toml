@@ -1,0 +1,8 @@
+[package]
+name = "extract-from-password-field"
+version = "0.1.0"
+authors = ["Austin Hartzheim <inbox@austinhartzheim.me>"]
+
+[dependencies]
+rocket = "^0.2"
+rocket_codegen = "^0.2"
