@@ -1,80 +1,49 @@
+use std::net::{SocketAddr, Ipv4Addr, IpAddr};
 
-extern crate bytes;
-extern crate futures;
-extern crate tokio_io;
-extern crate tokio_proto;
-extern crate tokio_service;
+extern crate mio;
+use mio::*;
+use mio::net::UdpSocket;
 
-use std::io;
-use std::str;
-use bytes::BytesMut;
-use tokio_io::codec::{Encoder, Decoder};
-use tokio_proto::pipeline::ServerProto;
-use tokio_io::{AsyncRead, AsyncWrite};
-use tokio_io::codec::Framed;
-use tokio_service::Service;
-use futures::{future, Future, BoxFuture};
-use tokio_proto::TcpServer;
-
-/// A simple codec that accepts any message. (We don't need to actually extract a message
-/// from a UDP packet to consider it a knock, so any message will suffice.)
-struct KnockCodec;
-
-impl Decoder for KnockCodec {
-    type Item = String; // TODO: check if using a string will only accept valid UTF8 strings
-    type Error = io::Error;
-
-    fn decode(&mut self, buf: &mut BytesMut) -> io::Result<Option<String>> {
-        let buffer_size = buf.len();
-        if buffer_size == 0 {
-            return Ok(None)
-        }
-
-        let full = buf.split_to(buffer_size);
-        Ok(Some("got message".to_string()))
-    }
-}
-
-impl Encoder for KnockCodec {
-    type Item = String;
-    type Error = io::Error;
-
-    fn encode(&mut self, msg: String, buf: &mut BytesMut) -> io::Result<()> {
-        buf.extend(msg.as_bytes());
-        Ok(())
-    }
-}
-
-/// A simple protocol that only listens for one message. (We don't need anything else because
-/// a port knock will be received with any singular message and there will be no reply.)
-struct KnockProto;
-
-impl<T: AsyncRead + AsyncWrite + 'static> ServerProto<T> for KnockProto {
-    type Request = String;
-    type Response = String; // TODO: do we need to respond?
-    type Transport = Framed<T, KnockCodec>;
-    type BindTransport = Result<Self::Transport, io::Error>;
-
-    fn bind_transport(&self, io: T) -> Self::BindTransport {
-        Ok(io.framed(KnockCodec))
-    }
-}
-
-struct KnockService;
-
-impl Service for KnockService {
-    type Request = String;
-    type Response = String;
-    type Error = io::Error;
-    type Future = BoxFuture<Self::Response, Self::Error>;
-
-    fn call(&self, req: Self::Request) -> Self::Future {
-        future::ok(req).boxed()
-    }
-}
+const BASE_PORT: u16 = 4000;
 
 fn main() {
-    let addr = "0.0.0.0:12345".parse().unwrap();
-    let server = TcpServer::new(KnockProto, addr);
-    server.serve(|| Ok(KnockService));
+    let bind_addr = IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0));
+    let poll = Poll::new().unwrap();
+
+    let mut sockets: Vec<UdpSocket> = vec![];
+    for i in 0..1000u16 {
+        let addr = SocketAddr::new(bind_addr, BASE_PORT + i);
+        let socket = UdpSocket::bind(&addr).unwrap();
+        sockets.push(socket);
+        poll.register(
+            &sockets[i as usize],
+            Token(i as usize),
+            Ready::readable(),
+            PollOpt::edge(),
+        ).unwrap();
+    }
+
+    // Create storage for events
+    let mut events = Events::with_capacity(1024);
+
+    loop {
+        poll.poll(&mut events, None).unwrap();
+
+        for event in events.iter() {
+            match event.token() {
+                Token(i) => {
+                    // Accept and drop the socket immediately, this will close
+                    // the socket and notify the client of the EOF.
+                    let mut buffer: [u8; 512] = [0; 512];
+                    let (_, addr) = sockets[i].recv_from(&mut buffer).unwrap();
+                    println!(
+                        "Got data from: {} on port {}.",
+                        addr,
+                        BASE_PORT + (i as u16)
+                    );
+                }
+                _ => unreachable!(),
+            }
+        }
+    }
 }
