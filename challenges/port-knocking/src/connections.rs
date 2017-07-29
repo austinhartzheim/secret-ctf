@@ -55,19 +55,19 @@ impl ConnectionManager {
                           ready: Ready,
                           pollopt: PollOpt) {
         let token = self.create_token();
-        {
-            match &connection {
-                &ConnectionType::TcpTelnetListener(ref socket) => {
-                    self.poll.register(socket, token, ready, pollopt).unwrap();
-                }
-                &ConnectionType::TcpTelnetSession(ref socket) => {
-                    self.poll.register(socket, token, ready, pollopt).unwrap();
-                }
-                &ConnectionType::UdpKnockListener(ref socket, _) => {
-                    self.poll.register(socket, token, ready, pollopt).unwrap();
-                }
+
+        match connection {
+            ConnectionType::TcpTelnetListener(ref socket) => {
+                self.poll.register(socket, token, ready, pollopt).unwrap();
+            }
+            ConnectionType::TcpTelnetSession(ref socket) => {
+                self.poll.register(socket, token, ready, pollopt).unwrap();
+            }
+            ConnectionType::UdpKnockListener(ref socket, _) => {
+                self.poll.register(socket, token, ready, pollopt).unwrap();
             }
         }
+
         self.connections
             .insert(token, Connection { connection: connection });
     }
