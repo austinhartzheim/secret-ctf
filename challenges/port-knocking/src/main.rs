@@ -22,10 +22,10 @@ fn set_up_sockets(connection_manager: &mut ConnectionManager) {
     let bind_addr = IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0));
 
     // Create UDP knock-listener sockets
-    for i in 0..NUM_PORTS {
-        let addr = SocketAddr::new(bind_addr, BASE_PORT + i);
+    for port in BASE_PORT..BASE_PORT + NUM_PORTS {
+        let addr = SocketAddr::new(bind_addr, port);
         let socket = UdpSocket::bind(&addr).unwrap();
-        connection_manager.add_connection(ConnectionType::UdpKnockListener(socket, BASE_PORT + i),
+        connection_manager.add_connection(ConnectionType::UdpKnockListener(socket, port),
                                           Ready::readable(),
                                           PollOpt::level());
     }
