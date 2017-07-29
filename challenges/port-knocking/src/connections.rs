@@ -37,11 +37,15 @@ struct Connection {
 
 pub struct ConnectionManager {
     connections: HashMap<Token, Connection>,
+    next_token: usize,
 }
 
 impl ConnectionManager {
     pub fn new() -> Self {
-        ConnectionManager { connections: HashMap::new() }
+        ConnectionManager {
+            connections: HashMap::new(),
+            next_token: 0,
+        }
     }
 
     pub fn add_connection(self: &mut Self, token: Token, connection: ConnectionType) {
@@ -74,6 +78,12 @@ impl ConnectionManager {
             }
         }
     }
+
+    pub fn create_token(self: &mut Self) -> Token {
+        let token = Token(self.next_token);
+        self.next_token += 1;
+        token
+    }
 }
 
 #[cfg(test)]
@@ -103,5 +113,14 @@ mod tests {
         let socket = UdpSocket::bind(&SocketAddr::new(addr, PORT)).unwrap();
         connection_manager.add_connection(TOKEN, ConnectionType::UdpKnockListener(socket, PORT));
         assert!(connection_manager.get_connection(TOKEN).is_some());
+    }
+
+    #[test]
+    fn test_create_token_sequence() {
+        let mut connection_manager = ConnectionManager::new();
+        assert_eq!(connection_manager.create_token(), Token(0));
+        assert_eq!(connection_manager.create_token(), Token(1));
+        assert_eq!(connection_manager.create_token(), Token(2));
+        assert_eq!(connection_manager.create_token(), Token(3));
     }
 }

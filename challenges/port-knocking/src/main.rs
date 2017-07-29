@@ -23,16 +23,13 @@ fn main() {
     let poll = Poll::new().unwrap();
     let mut events = Events::with_capacity(1024);
     let mut state = PortKnockingState::new();
-
     let mut connection_manager = ConnectionManager::new();
-    let mut next_token = 0;
 
     // Create UDP knock-listener sockets
     for i in 0..NUM_PORTS {
         let addr = SocketAddr::new(bind_addr, BASE_PORT + i);
         let socket = UdpSocket::bind(&addr).unwrap();
-        let token = Token(next_token);
-        next_token += 1;
+        let token = connection_manager.create_token();
         poll.register(&socket, token, Ready::readable(), PollOpt::level())
             .unwrap();
         connection_manager.add_connection(token,
@@ -41,8 +38,7 @@ fn main() {
 
     // Create telnet listener socket
     let telnet_listener = TcpListener::bind(&SocketAddr::new(bind_addr, TELNET_PORT)).unwrap();
-    let token = Token(next_token);
-    next_token += 1;
+    let token = connection_manager.create_token();
     poll.register(&telnet_listener, token, Ready::readable(), PollOpt::level())
         .unwrap();
     connection_manager.add_connection(token, ConnectionType::TcpTelnetListener(telnet_listener));
@@ -76,8 +72,7 @@ fn main() {
                         Ok((telnet_socket, addr)) => {
                             println!("Got a telnet connection from {}", addr);
                             if let KnockResult::Success = state.check(addr.ip()) {
-                                let token = Token(next_token);
-                                next_token += 1;
+                                let token = connection_manager.create_token();
                                 poll.register(&telnet_socket,
                                               token,
                                               Ready::writable(),
