@@ -75,20 +75,17 @@ fn main() {
                     match socket.accept() {
                         Ok((telnet_socket, addr)) => {
                             println!("Got a telnet connection from {}", addr);
-                            match state.check(addr.ip()) {
-                                KnockResult::Success => {
-                                    let token = Token(next_token);
-                                    next_token += 1;
-                                    poll.register(&telnet_socket,
-                                                  token,
-                                                  Ready::writable(),
-                                                  PollOpt::oneshot())
-                                        .unwrap();
-                                    connection_manager
+                            if let KnockResult::Success = state.check(addr.ip()) {
+                                let token = Token(next_token);
+                                next_token += 1;
+                                poll.register(&telnet_socket,
+                                              token,
+                                              Ready::writable(),
+                                              PollOpt::oneshot())
+                                    .unwrap();
+                                connection_manager
                                         .add_connection(token,
                                                         ConnectionType::TcpTelnetSession(telnet_socket));
-                                }
-                                _ => {}
                             }
                         }
                         Err(_) => {

@@ -1,11 +1,11 @@
 use std::collections::HashMap;
-use std::time::{Duration, SystemTime};
 use std::io;
 
 use mio::net::{TcpListener, TcpStream, UdpSocket};
 use mio::event::Evented;
 use mio::{Poll, Token};
 
+#[derive(Debug)]
 pub enum ConnectionType {
     UdpKnockListener(UdpSocket, u16),
     TcpTelnetListener(TcpListener),
@@ -33,35 +33,26 @@ impl ConnectionType {
 
 struct Connection {
     connection: ConnectionType,
-    last_access: SystemTime,
 }
 
 pub struct ConnectionManager {
     connections: HashMap<Token, Connection>,
-    timeout_duration: Duration,
-    next_token: usize,
 }
 
 impl ConnectionManager {
     pub fn new() -> Self {
-        ConnectionManager {
-            connections: HashMap::new(),
-            timeout_duration: Duration::from_secs(60),
-            next_token: 0,
-        }
+        ConnectionManager { connections: HashMap::new() }
     }
 
     pub fn add_connection(self: &mut Self, token: Token, connection: ConnectionType) {
         self.connections
-            .insert(token,
-                    Connection {
-                        connection: connection,
-                        last_access: SystemTime::now(),
-                    });
+            .insert(token, Connection { connection: connection });
     }
 
     /// Look up a ConnectionType object based on a mio Token.
     pub fn get_connection(self: &mut Self, token: Token) -> Option<&ConnectionType> {
+        // TODO: We should be able to lift the mutable requirement if we add lifetimes.
+        // This would allow us to take out the clone nastiness in main().
         match self.connections.get_mut(&token) {
             Some(connection) => Some(&connection.connection),
             None => None,
@@ -69,24 +60,48 @@ impl ConnectionManager {
     }
 
     pub fn remove_connection(self: &mut Self, token: Token, poll: &Poll) {
-        match self.connections.remove(&token) {
-            Some(connection) => {
-                match connection.connection {
-                    ConnectionType::TcpTelnetListener(socket) => {
-                        socket.deregister(&poll).unwrap();
-                    }
-                    ConnectionType::TcpTelnetSession(socket) => {
-                        socket.deregister(&poll).unwrap();
-                    }
-                    ConnectionType::UdpKnockListener(socket, _) => {
-                        socket.deregister(&poll).unwrap();
-                    }
+        if let Some(connection) = self.connections.remove(&token) {
+            match connection.connection {
+                ConnectionType::TcpTelnetListener(socket) => {
+                    socket.deregister(poll).unwrap();
+                }
+                ConnectionType::TcpTelnetSession(socket) => {
+                    socket.deregister(poll).unwrap();
+                }
+                ConnectionType::UdpKnockListener(socket, _) => {
+                    socket.deregister(poll).unwrap();
                 }
             }
-            None => {}
         }
     }
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
+    use mio::Token;
+    use mio::net::UdpSocket;
+
+    use ConnectionManager;
+    use ConnectionType;
+
+    #[test]
+    fn test_get_connection_returns_none_when_no_connections_added() {
+        let mut connection_manager = ConnectionManager::new();
+        assert!(connection_manager.get_connection(Token(0)).is_none());
+        assert!(connection_manager.get_connection(Token(1)).is_none());
+    }
+
+    #[test]
+    fn test_retrevial_of_connection_by_token() {
+        const TOKEN: Token = Token(12);
+        const PORT: u16 = 60213;
+        let addr = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
+
+        let mut connection_manager = ConnectionManager::new();
+        let socket = UdpSocket::bind(&SocketAddr::new(addr, PORT)).unwrap();
+        connection_manager.add_connection(TOKEN, ConnectionType::UdpKnockListener(socket, PORT));
+        assert!(connection_manager.get_connection(TOKEN).is_some());
+    }
+}
