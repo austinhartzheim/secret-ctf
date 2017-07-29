@@ -3,7 +3,7 @@ use std::io;
 
 use mio::net::{TcpListener, TcpStream, UdpSocket};
 use mio::event::Evented;
-use mio::{Poll, Token};
+use mio::*;
 
 #[derive(Debug)]
 pub enum ConnectionType {
@@ -38,6 +38,7 @@ struct Connection {
 pub struct ConnectionManager {
     connections: HashMap<Token, Connection>,
     next_token: usize,
+    pub poll: Poll,
 }
 
 impl ConnectionManager {
@@ -45,10 +46,28 @@ impl ConnectionManager {
         ConnectionManager {
             connections: HashMap::new(),
             next_token: 0,
+            poll: Poll::new().unwrap(),
         }
     }
 
-    pub fn add_connection(self: &mut Self, token: Token, connection: ConnectionType) {
+    pub fn add_connection(self: &mut Self,
+                          connection: ConnectionType,
+                          ready: Ready,
+                          pollopt: PollOpt) {
+        let token = self.create_token();
+        {
+            match &connection {
+                &ConnectionType::TcpTelnetListener(ref socket) => {
+                    self.poll.register(socket, token, ready, pollopt).unwrap();
+                }
+                &ConnectionType::TcpTelnetSession(ref socket) => {
+                    self.poll.register(socket, token, ready, pollopt).unwrap();
+                }
+                &ConnectionType::UdpKnockListener(ref socket, _) => {
+                    self.poll.register(socket, token, ready, pollopt).unwrap();
+                }
+            }
+        }
         self.connections
             .insert(token, Connection { connection: connection });
     }
@@ -63,17 +82,17 @@ impl ConnectionManager {
         }
     }
 
-    pub fn remove_connection(self: &mut Self, token: Token, poll: &Poll) {
+    pub fn remove_connection(self: &mut Self, token: Token) {
         if let Some(connection) = self.connections.remove(&token) {
             match connection.connection {
                 ConnectionType::TcpTelnetListener(socket) => {
-                    socket.deregister(poll).unwrap();
+                    socket.deregister(&self.poll).unwrap();
                 }
                 ConnectionType::TcpTelnetSession(socket) => {
-                    socket.deregister(poll).unwrap();
+                    socket.deregister(&self.poll).unwrap();
                 }
                 ConnectionType::UdpKnockListener(socket, _) => {
-                    socket.deregister(poll).unwrap();
+                    socket.deregister(&self.poll).unwrap();
                 }
             }
         }

@@ -18,31 +18,27 @@ const FLAG: &str = "flag_professional_port_knocker\n";
 
 const TELNET_PORT: u16 = 2323;
 
-fn set_up_sockets(connection_manager: &mut ConnectionManager, poll: &Poll) {
+fn set_up_sockets(connection_manager: &mut ConnectionManager) {
     let bind_addr = IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0));
 
     // Create UDP knock-listener sockets
     for i in 0..NUM_PORTS {
         let addr = SocketAddr::new(bind_addr, BASE_PORT + i);
         let socket = UdpSocket::bind(&addr).unwrap();
-        let token = connection_manager.create_token();
-        poll.register(&socket, token, Ready::readable(), PollOpt::level())
-            .unwrap();
-        connection_manager.add_connection(token,
-                                          ConnectionType::UdpKnockListener(socket, BASE_PORT + i));
+        connection_manager.add_connection(ConnectionType::UdpKnockListener(socket, BASE_PORT + i),
+                                          Ready::readable(),
+                                          PollOpt::level());
     }
 
     // Create telnet listener socket
     let telnet_listener = TcpListener::bind(&SocketAddr::new(bind_addr, TELNET_PORT)).unwrap();
-    let token = connection_manager.create_token();
-    poll.register(&telnet_listener, token, Ready::readable(), PollOpt::level())
-        .unwrap();
-    connection_manager.add_connection(token, ConnectionType::TcpTelnetListener(telnet_listener));
+    connection_manager.add_connection(ConnectionType::TcpTelnetListener(telnet_listener),
+                                      Ready::readable(),
+                                      PollOpt::level());
 }
 
 fn main() {
     // Set up mio event tracking
-    let poll = Poll::new().unwrap();
     let mut events = Events::with_capacity(1024);
 
     // Set up internal state tracking
@@ -50,11 +46,11 @@ fn main() {
     let mut connection_manager = ConnectionManager::new();
 
     // Create sockets
-    set_up_sockets(&mut connection_manager, &poll);
+    set_up_sockets(&mut connection_manager);
 
     // Begin looping over mio events
     loop {
-        poll.poll(&mut events, None).unwrap();
+        connection_manager.poll.poll(&mut events, None).unwrap();
         for event in events.iter() {
             let cloned_connection: ConnectionType;
 
@@ -82,15 +78,7 @@ fn main() {
                         Ok((telnet_socket, addr)) => {
                             println!("Got a telnet connection from {}", addr);
                             if let KnockResult::Success = state.check(addr.ip()) {
-                                let token = connection_manager.create_token();
-                                poll.register(&telnet_socket,
-                                              token,
-                                              Ready::writable(),
-                                              PollOpt::oneshot())
-                                    .unwrap();
-                                connection_manager
-                                        .add_connection(token,
-                                                        ConnectionType::TcpTelnetSession(telnet_socket));
+                                connection_manager.add_connection(ConnectionType::TcpTelnetSession(telnet_socket), Ready::writable(), PollOpt::oneshot());
                             }
                         }
                         Err(_) => {
@@ -101,7 +89,7 @@ fn main() {
                 }
                 ConnectionType::TcpTelnetSession(mut socket) => {
                     socket.write_all(FLAG.as_bytes()).unwrap();
-                    connection_manager.remove_connection(event.token(), &poll);
+                    connection_manager.remove_connection(event.token());
                 }
             }
         }
