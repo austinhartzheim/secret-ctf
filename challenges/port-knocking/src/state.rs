@@ -74,4 +74,35 @@ mod tests {
         }
         assert_eq!(state.check(addr), KnockResult::Success);
     }
+
+    /// Check that a rolling buffer of knocks is maintained such that any
+    /// sequence containing the correct sequence at the end is considered
+    /// correct.
+    #[test]
+    fn test_check_correct_sequence_with_rollover() {
+        let mut state = PortKnockingState::new();
+        let addr = IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0));
+
+        // Perform a sequence of knocks that *ends* with the correct sequence.
+        state.knock(addr, 4000);
+        state.knock(addr, 4001);
+        for port in SEQUENCE.iter() {
+            state.knock(addr, *port);
+        }
+        assert_eq!(state.check(addr), KnockResult::Success);
+    }
+
+    #[test]
+    fn test_check_contains_correct_sequence() {
+        let mut state = PortKnockingState::new();
+        let addr = IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0));
+
+        // Perform a sequence of knocks that *ends* with the correct sequence.
+        for port in SEQUENCE.iter() {
+            state.knock(addr, *port);
+            state.knock(addr, 4000);
+            state.knock(addr, 4001);
+        }
+        assert_eq!(state.check(addr), KnockResult::Fail);
+    }
 }
