@@ -78,7 +78,10 @@ fn main() {
                         Ok((telnet_socket, addr)) => {
                             println!("Got a telnet connection from {}", addr);
                             if let KnockResult::Success = state.check(addr.ip()) {
+                                // Successful knock received from this IP. Accept their telnet
+                                // connection and reset the state for their IP.
                                 connection_manager.add_connection(ConnectionType::TcpTelnetSession(telnet_socket), Ready::writable(), PollOpt::oneshot());
+                                state.reset(addr.ip());
                             }
                         }
                         Err(_) => {

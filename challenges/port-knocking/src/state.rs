@@ -42,6 +42,10 @@ impl PortKnockingState {
         }
 
     }
+
+    pub fn reset(self: &mut Self, addr: IpAddr) {
+        self.knocks.remove(&addr);
+    }
 }
 
 #[cfg(test)]
@@ -104,5 +108,19 @@ mod tests {
             state.knock(addr, 4001);
         }
         assert_eq!(state.check(addr), KnockResult::Fail);
+    }
+
+    #[test]
+    fn test_reset_after_success() {
+        let mut state = PortKnockingState::new();
+        let addr = IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0));
+
+        // Perform a sequence of knocks that *ends* with the correct sequence.
+        for port in SEQUENCE.iter() {
+            state.knock(addr, *port);
+        }
+        assert_eq!(state.check(addr), KnockResult::Success);
+        state.reset(addr);
+        assert_eq!(state.check(addr), KnockResult::Unknown);
     }
 }
