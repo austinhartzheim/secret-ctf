@@ -1,0 +1,9 @@
+version: '3.2'
+services:
+  port-knocking:
+    build: .
+    network_mode: host
+    ports:
+      - "2323:2323"
+      - "4000-5000/udp"
+      
