@@ -1,0 +1,7 @@
+[package]
+name = "port-knocking"
+version = "0.1.0"
+authors = ["Austin Hartzheim <inbox@austinhartzheim.me>"]
+
+[dependencies]
+mio = "^0.6"
