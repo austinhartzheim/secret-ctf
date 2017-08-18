@@ -1,0 +1,28 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: port-knocking-service
+spec:
+  selector:
+    app: port-knocking
+  type: NodePort
+  # type: LoadBalancer
+  # sessionAffinity: ClientIP
+  ports:
+    - name: telnet-port
+      port: 2323
+      protocol: TCP
+      targetPort: 2323
+      nodePort: 32323
+    - name: port-udp-4002
+      port: 4002
+      protocol: UDP
+      nodePort: 30002
+    - name: port-udp-4841
+      port: 4841
+      protocol: UDP
+      nodePort: 30841
+    - name: port-udp-4219
+      port: 4219
+      protocol: UDP
+      nodePort: 30219

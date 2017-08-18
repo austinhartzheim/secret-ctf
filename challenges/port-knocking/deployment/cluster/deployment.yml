@@ -1,0 +1,23 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: port-knocking-deployment
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: port-knocking
+    spec:
+      containers:
+        - name: port-knocking
+          image: 383893927536.dkr.ecr.us-east-2.amazonaws.com/secret-ctf/port-knocking:latest
+          ports:
+            - containerPort: 2323
+            - containerPort: 4002
+              protocol: UDP
+            - containerPort: 4841
+              protocol: UDP
+            - containerPort: 4219
+              protocol: UDP
