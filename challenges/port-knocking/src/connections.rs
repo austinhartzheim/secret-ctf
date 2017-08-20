@@ -111,35 +111,14 @@ impl ConnectionManager {
 
 #[cfg(test)]
 mod tests {
-    use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-
-    use mio::{PollOpt, Ready, Token};
-    use mio::net::UdpSocket;
-
+    use mio::Token;
     use ConnectionManager;
-    use ConnectionType;
 
     #[test]
     fn test_get_connection_returns_none_when_no_connections_added() {
         let mut connection_manager = ConnectionManager::new();
         assert!(connection_manager.get_connection(Token(0)).is_none());
         assert!(connection_manager.get_connection(Token(1)).is_none());
-    }
-
-    #[test]
-    fn test_retrevial_of_connection_by_token() {
-        const TOKEN: Token = Token(12);
-        const PORT: u16 = 60213;
-        let addr = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
-
-        let mut connection_manager = ConnectionManager::new();
-        let socket = UdpSocket::bind(&SocketAddr::new(addr, PORT)).unwrap();
-        connection_manager.add_connection(
-            ConnectionType::UdpKnockListener(socket, PORT),
-            Ready::readable(),
-            PollOpt::level(),
-        );
-        assert!(connection_manager.get_connection(TOKEN).is_some());
     }
 
     #[test]
