@@ -12,7 +12,7 @@ mod connections;
 use connections::{ConnectionManager, ConnectionType};
 
 const BASE_PORT: u16 = 4000;
-const NUM_PORTS: u16 = 1000;
+const NUM_PORTS: u16 = 100;
 
 const FLAG: &str = "flag_professional_port_knocker\n";
 
@@ -25,16 +25,20 @@ fn set_up_sockets(connection_manager: &mut ConnectionManager) {
     for port in BASE_PORT..BASE_PORT + NUM_PORTS {
         let addr = SocketAddr::new(bind_addr, port);
         let socket = UdpSocket::bind(&addr).unwrap();
-        connection_manager.add_connection(ConnectionType::UdpKnockListener(socket, port),
-                                          Ready::readable(),
-                                          PollOpt::level());
+        connection_manager.add_connection(
+            ConnectionType::UdpKnockListener(socket, port),
+            Ready::readable(),
+            PollOpt::level(),
+        );
     }
 
     // Create telnet listener socket
     let telnet_listener = TcpListener::bind(&SocketAddr::new(bind_addr, TELNET_PORT)).unwrap();
-    connection_manager.add_connection(ConnectionType::TcpTelnetListener(telnet_listener),
-                                      Ready::readable(),
-                                      PollOpt::level());
+    connection_manager.add_connection(
+        ConnectionType::TcpTelnetListener(telnet_listener),
+        Ready::readable(),
+        PollOpt::level(),
+    );
 }
 
 fn main() {
@@ -80,7 +84,11 @@ fn main() {
                             if let KnockResult::Success = state.check(addr.ip()) {
                                 // Successful knock received from this IP. Accept their telnet
                                 // connection and reset the state for their IP.
-                                connection_manager.add_connection(ConnectionType::TcpTelnetSession(telnet_socket), Ready::writable(), PollOpt::oneshot());
+                                connection_manager.add_connection(
+                                    ConnectionType::TcpTelnetSession(telnet_socket),
+                                    Ready::writable(),
+                                    PollOpt::oneshot(),
+                                );
                                 state.reset(addr.ip());
                             }
                         }

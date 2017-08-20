@@ -50,10 +50,12 @@ impl ConnectionManager {
         }
     }
 
-    pub fn add_connection(self: &mut Self,
-                          connection: ConnectionType,
-                          ready: Ready,
-                          pollopt: PollOpt) {
+    pub fn add_connection(
+        self: &mut Self,
+        connection: ConnectionType,
+        ready: Ready,
+        pollopt: PollOpt,
+    ) {
         let token = self.create_token();
 
         match connection {
@@ -68,8 +70,10 @@ impl ConnectionManager {
             }
         }
 
-        self.connections
-            .insert(token, Connection { connection: connection });
+        self.connections.insert(
+            token,
+            Connection { connection: connection },
+        );
     }
 
     /// Look up a ConnectionType object based on a mio Token.
@@ -109,7 +113,7 @@ impl ConnectionManager {
 mod tests {
     use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
-    use mio::Token;
+    use mio::{PollOpt, Ready, Token};
     use mio::net::UdpSocket;
 
     use ConnectionManager;
@@ -130,7 +134,11 @@ mod tests {
 
         let mut connection_manager = ConnectionManager::new();
         let socket = UdpSocket::bind(&SocketAddr::new(addr, PORT)).unwrap();
-        connection_manager.add_connection(TOKEN, ConnectionType::UdpKnockListener(socket, PORT));
+        connection_manager.add_connection(
+            ConnectionType::UdpKnockListener(socket, PORT),
+            Ready::readable(),
+            PollOpt::level(),
+        );
         assert!(connection_manager.get_connection(TOKEN).is_some());
     }
 
