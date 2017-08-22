@@ -1,0 +1,44 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: create challenge S3 directory
+      s3:
+        bucket: secret-ctf-challenges
+        mode: create
+        object: challenges/jpeg-overload/files/
+
+    - name: create challenge IAM role
+      iam_role:
+        name: secret-ctf-jpeg-overload-role
+        state: present
+        path: /secret-ctf/test/challenge/jpeg-overload/
+        assume_role_policy_document: "{{ lookup('file','policy.json') }}"
+      register: role
+
+    - name: add S3 access to challenge IAM role
+      iam_policy:
+        policy_name: secret-ctf-jpeg-overload-s3-write-access
+        state: present
+        iam_type: role
+        iam_name: "{{ role.iam_role.role_name }}"
+        policy_document: s3-write-access.json
+
+    - name: test-secret-ctf-jpeg-overload-lambda
+      lambda:
+        name: '{{ item.name }}'
+        state: present
+        zip_file: '{{ item.zip_file }}'
+        runtime: 'python3.6'
+        role: "{{ role.iam_role.arn }}"
+        handler: 'main.entrypoint'
+        environment_variables: '{{ item.env_vars }}'
+        timeout: '{{ item.timeout }}'
+      with_items:
+        - name: test-secret-ctf-jpeg-overload-generate
+          zip_file: ../secret-ctf-jpeg-overload-generate.zip
+          env_vars:
+            S3_BUCKET: 'secret-ctf-challenges'
+            S3_KEY_BASE: 'challenges/jpeg-overload/files/'
+          timeout: 1
