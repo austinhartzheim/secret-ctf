@@ -1,0 +1,217 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: port-knocking-deployment
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: port-knocking
+    spec:
+      containers:
+        - name: port-knocking
+          image: 383893927536.dkr.ecr.us-east-2.amazonaws.com/secret-ctf/port-knocking:latest
+          ports:
+            - containerPort: 2323
+            - containerPort: 4000
+              protocol: UDP
+            - containerPort: 4001
+              protocol: UDP
+            - containerPort: 4002
+              protocol: UDP
+            - containerPort: 4003
+              protocol: UDP
+            - containerPort: 4004
+              protocol: UDP
+            - containerPort: 4005
+              protocol: UDP
+            - containerPort: 4006
+              protocol: UDP
+            - containerPort: 4007
+              protocol: UDP
+            - containerPort: 4008
+              protocol: UDP
+            - containerPort: 4009
+              protocol: UDP
+            - containerPort: 4010
+              protocol: UDP
+            - containerPort: 4011
+              protocol: UDP
+            - containerPort: 4012
+              protocol: UDP
+            - containerPort: 4013
+              protocol: UDP
+            - containerPort: 4014
+              protocol: UDP
+            - containerPort: 4015
+              protocol: UDP
+            - containerPort: 4016
+              protocol: UDP
+            - containerPort: 4017
+              protocol: UDP
+            - containerPort: 4018
+              protocol: UDP
+            - containerPort: 4019
+              protocol: UDP
+            - containerPort: 4020
+              protocol: UDP
+            - containerPort: 4021
+              protocol: UDP
+            - containerPort: 4022
+              protocol: UDP
+            - containerPort: 4023
+              protocol: UDP
+            - containerPort: 4024
+              protocol: UDP
+            - containerPort: 4025
+              protocol: UDP
+            - containerPort: 4026
+              protocol: UDP
+            - containerPort: 4027
+              protocol: UDP
+            - containerPort: 4028
+              protocol: UDP
+            - containerPort: 4029
+              protocol: UDP
+            - containerPort: 4030
+              protocol: UDP
+            - containerPort: 4031
+              protocol: UDP
+            - containerPort: 4032
+              protocol: UDP
+            - containerPort: 4033
+              protocol: UDP
+            - containerPort: 4034
+              protocol: UDP
+            - containerPort: 4035
+              protocol: UDP
+            - containerPort: 4036
+              protocol: UDP
+            - containerPort: 4037
+              protocol: UDP
+            - containerPort: 4038
+              protocol: UDP
+            - containerPort: 4039
+              protocol: UDP
+            - containerPort: 4040
+              protocol: UDP
+            - containerPort: 4041
+              protocol: UDP
+            - containerPort: 4042
+              protocol: UDP
+            - containerPort: 4043
+              protocol: UDP
+            - containerPort: 4044
+              protocol: UDP
+            - containerPort: 4045
+              protocol: UDP
+            - containerPort: 4046
+              protocol: UDP
+            - containerPort: 4047
+              protocol: UDP
+            - containerPort: 4048
+              protocol: UDP
+            - containerPort: 4049
+              protocol: UDP
+            - containerPort: 4050
+              protocol: UDP
+            - containerPort: 4051
+              protocol: UDP
+            - containerPort: 4052
+              protocol: UDP
+            - containerPort: 4053
+              protocol: UDP
+            - containerPort: 4054
+              protocol: UDP
+            - containerPort: 4055
+              protocol: UDP
+            - containerPort: 4056
+              protocol: UDP
+            - containerPort: 4057
+              protocol: UDP
+            - containerPort: 4058
+              protocol: UDP
+            - containerPort: 4059
+              protocol: UDP
+            - containerPort: 4060
+              protocol: UDP
+            - containerPort: 4061
+              protocol: UDP
+            - containerPort: 4062
+              protocol: UDP
+            - containerPort: 4063
+              protocol: UDP
+            - containerPort: 4064
+              protocol: UDP
+            - containerPort: 4065
+              protocol: UDP
+            - containerPort: 4066
+              protocol: UDP
+            - containerPort: 4067
+              protocol: UDP
+            - containerPort: 4068
+              protocol: UDP
+            - containerPort: 4069
+              protocol: UDP
+            - containerPort: 4070
+              protocol: UDP
+            - containerPort: 4071
+              protocol: UDP
+            - containerPort: 4072
+              protocol: UDP
+            - containerPort: 4073
+              protocol: UDP
+            - containerPort: 4074
+              protocol: UDP
+            - containerPort: 4075
+              protocol: UDP
+            - containerPort: 4076
+              protocol: UDP
+            - containerPort: 4077
+              protocol: UDP
+            - containerPort: 4078
+              protocol: UDP
+            - containerPort: 4079
+              protocol: UDP
+            - containerPort: 4080
+              protocol: UDP
+            - containerPort: 4081
+              protocol: UDP
+            - containerPort: 4082
+              protocol: UDP
+            - containerPort: 4083
+              protocol: UDP
+            - containerPort: 4084
+              protocol: UDP
+            - containerPort: 4085
+              protocol: UDP
+            - containerPort: 4086
+              protocol: UDP
+            - containerPort: 4087
+              protocol: UDP
+            - containerPort: 4088
+              protocol: UDP
+            - containerPort: 4089
+              protocol: UDP
+            - containerPort: 4090
+              protocol: UDP
+            - containerPort: 4091
+              protocol: UDP
+            - containerPort: 4092
+              protocol: UDP
+            - containerPort: 4093
+              protocol: UDP
+            - containerPort: 4094
+              protocol: UDP
+            - containerPort: 4095
+              protocol: UDP
+            - containerPort: 4096
+              protocol: UDP
+            - containerPort: 4097
+              protocol: UDP
+            - containerPort: 4098
+              protocol: UDP
+            - containerPort: 4099
+              protocol: UDP

@@ -50,10 +50,12 @@ impl ConnectionManager {
         }
     }
 
-    pub fn add_connection(self: &mut Self,
-                          connection: ConnectionType,
-                          ready: Ready,
-                          pollopt: PollOpt) {
+    pub fn add_connection(
+        self: &mut Self,
+        connection: ConnectionType,
+        ready: Ready,
+        pollopt: PollOpt,
+    ) {
         let token = self.create_token();
 
         match connection {
@@ -68,8 +70,10 @@ impl ConnectionManager {
             }
         }
 
-        self.connections
-            .insert(token, Connection { connection: connection });
+        self.connections.insert(
+            token,
+            Connection { connection: connection },
+        );
     }
 
     /// Look up a ConnectionType object based on a mio Token.
@@ -107,31 +111,14 @@ impl ConnectionManager {
 
 #[cfg(test)]
 mod tests {
-    use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-
     use mio::Token;
-    use mio::net::UdpSocket;
-
     use ConnectionManager;
-    use ConnectionType;
 
     #[test]
     fn test_get_connection_returns_none_when_no_connections_added() {
         let mut connection_manager = ConnectionManager::new();
         assert!(connection_manager.get_connection(Token(0)).is_none());
         assert!(connection_manager.get_connection(Token(1)).is_none());
-    }
-
-    #[test]
-    fn test_retrevial_of_connection_by_token() {
-        const TOKEN: Token = Token(12);
-        const PORT: u16 = 60213;
-        let addr = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
-
-        let mut connection_manager = ConnectionManager::new();
-        let socket = UdpSocket::bind(&SocketAddr::new(addr, PORT)).unwrap();
-        connection_manager.add_connection(TOKEN, ConnectionType::UdpKnockListener(socket, PORT));
-        assert!(connection_manager.get_connection(TOKEN).is_some());
     }
 
     #[test]

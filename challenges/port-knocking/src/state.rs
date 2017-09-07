@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::net::IpAddr;
 
 const SEQUENCE_LENGTH: usize = 3;
-const SEQUENCE: [u16; SEQUENCE_LENGTH] = [4002, 4841, 4219];
+const SEQUENCE: [u16; SEQUENCE_LENGTH] = [4002, 4041, 4019];
 
 #[derive(Debug, PartialEq)]
 pub enum KnockResult {
@@ -31,6 +31,9 @@ impl PortKnockingState {
     pub fn check(self: &Self, addr: IpAddr) -> KnockResult {
         match self.knocks.get(&addr) {
             Some(port_list) => {
+                if port_list.len() != SEQUENCE_LENGTH {
+                    return KnockResult::Fail;
+                }
                 for (actual, expected) in port_list.iter().zip(SEQUENCE.iter()) {
                     if actual != expected {
                         return KnockResult::Fail;
@@ -57,15 +60,17 @@ mod tests {
     #[test]
     fn test_check_no_knocks_returns_unknown() {
         let state = PortKnockingState::new();
-        assert_eq!(state.check(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
-                   KnockResult::Unknown)
+        assert_eq!(
+            state.check(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0))),
+            KnockResult::Unknown
+        )
     }
 
     #[test]
     fn test_check_one_knock_returns_fail() {
         let mut state = PortKnockingState::new();
         let addr = IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0));
-        state.knock(addr, 1234);
+        state.knock(addr, SEQUENCE[0]);
         assert_eq!(state.check(addr), KnockResult::Fail);
     }
 

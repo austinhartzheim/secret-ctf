@@ -5,5 +5,4 @@ services:
     network_mode: host
     ports:
       - "2323:2323"
-      - "4000-5000/udp"
-      
+      - "4000-5099/udp"
