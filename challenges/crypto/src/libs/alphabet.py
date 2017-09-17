@@ -41,7 +41,7 @@ def shift_char(char, shift):
     """
     Shift the given character by the shift value, preserving the alphabet range.
     """
-    print(char)
-    initial = ALPHABET.index(char)
-    shifted = initial + shift
-    return ALPHABET[mod_by_alphabet_size(shifted)]
+    initial_index = ALPHABET.index(char)
+    shifted_index = initial_index + shift
+    shifted_index_in_alphabet_range = mod_by_alphabet_size(shifted_index)
+    return ALPHABET[shifted_index_in_alphabet_range]
