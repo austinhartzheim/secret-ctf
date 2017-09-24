@@ -10,7 +10,7 @@ def generate_flag():
     Generate a random flag.
     """
     flag = ""
-    for i in range(FLAG_LENGTH):
+    for _ in range(FLAG_LENGTH):
         flag += random.choice(ALPHABET)
     return flag
 
