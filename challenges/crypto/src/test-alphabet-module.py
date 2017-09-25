@@ -8,10 +8,6 @@ class TestHelperMethods(unittest.TestCase):
 
     # --- generate_flag() tests ---
 
-    def test_generate_flag_is_not_none(self):
-        flag = libs.alphabet.generate_flag()
-        self.assertIsNotNone(flag)
-
     def test_generate_flag_is_str(self):
         flag = libs.alphabet.generate_flag()
         self.assertIsInstance(flag, str)
@@ -26,10 +22,6 @@ class TestHelperMethods(unittest.TestCase):
             self.assertTrue(char in libs.alphabet.ALPHABET)
 
     # --- scramble_alphabet() tests ---
-
-    def test_scramble_alphabet_is_not_none(self):
-        new_alphabet = libs.alphabet.scramble_alphabet()
-        self.assertIsNotNone(new_alphabet)
 
     def test_scramble_alphabet_is_list(self):
         new_alphabet = libs.alphabet.scramble_alphabet()
@@ -46,10 +38,6 @@ class TestHelperMethods(unittest.TestCase):
 
     # --- generate_random_shift() tests ---
 
-    def test_generate_random_shift_is_not_none(self):
-        shift = libs.alphabet.generate_random_shift()
-        self.assertIsNotNone(shift)
-
     def test_generate_random_shift_is_int(self):
         shift = libs.alphabet.generate_random_shift()
         self.assertIsInstance(shift, int)
@@ -59,26 +47,43 @@ class TestHelperMethods(unittest.TestCase):
         self.assertGreaterEqual(shift, 1)
         self.assertLessEqual(shift, len(libs.alphabet.ALPHABET))
 
-    # --- ascii_mod() tests ---
+    # --- mod_by_alphabet_size() tests ---
 
     def test_mod_by_alphabet_size_zero(self):
         index = 0
         result_index = libs.alphabet.mod_by_alphabet_size(index)
-        self.assertIsNotNone(result_index)
         self.assertIsInstance(result_index, int)
         self.assertEqual(result_index, index % len(libs.alphabet.ALPHABET))
 
     def test_mod_by_alphabet_size_in_range(self):
         index = 10
         result_index = libs.alphabet.mod_by_alphabet_size(index)
-        self.assertIsNotNone(result_index)
         self.assertIsInstance(result_index, int)
         self.assertEqual(result_index, index % len(libs.alphabet.ALPHABET))
 
     def test_mod_by_alphabet_size_out_of_range(self):
         index = 500
         result_index = libs.alphabet.mod_by_alphabet_size(index)
-        self.assertIsNotNone(result_index)
+        self.assertIsInstance(result_index, int)
+        self.assertEqual(result_index, index % len(libs.alphabet.ALPHABET))
+
+    # --- shift_char() tests ---
+
+    def test_shift_char_zero(self):
+        index = 0
+        result_index = libs.alphabet.mod_by_alphabet_size(index)
+        self.assertIsInstance(result_index, int)
+        self.assertEqual(result_index, index % len(libs.alphabet.ALPHABET))
+
+    def test_mod_by_alphabet_size_in_range(self):
+        index = 10
+        result_index = libs.alphabet.mod_by_alphabet_size(index)
+        self.assertIsInstance(result_index, int)
+        self.assertEqual(result_index, index % len(libs.alphabet.ALPHABET))
+
+    def test_mod_by_alphabet_size_out_of_range(self):
+        index = 500
+        result_index = libs.alphabet.mod_by_alphabet_size(index)
         self.assertIsInstance(result_index, int)
         self.assertEqual(result_index, index % len(libs.alphabet.ALPHABET))
 
