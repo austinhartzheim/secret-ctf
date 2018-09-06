@@ -1,2 +1,2 @@
 # secret-ctf
-An into-level CTF competition.
+An intro-level CTF competition.
